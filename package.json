@@ -1,0 +1,15 @@
+{
+  "name": "electronic-journal",
+  "version": "1.0.0",
+  "description": "Электронный журнал успеваемости — React + Node.js + PostgreSQL",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev": "concurrently --kill-others-on-fail -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "start": "npm run start --prefix backend",
+    "setup": "npm run install:all && echo '\\n✅ Dependencies installed.\\n📝 Copy backend/.env.example to backend/.env and fill in DB credentials.\\n🔑 After first register, run: cd backend && node make-admin.js \"Ваше имя\"'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
