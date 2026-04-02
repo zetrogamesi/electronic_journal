@@ -109,6 +109,7 @@ const getMe = async (req, res) => {
       groupId:   user.group?._id,
       groupName: user.group?.name || '',
       isAdmin:   user.isAdmin,
+      isTeacher: user.isTeacher || false,
       createdAt: user.createdAt,
     });
   } catch (err) {

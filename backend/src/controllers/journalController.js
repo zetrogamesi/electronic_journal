@@ -5,10 +5,13 @@ const User    = require('../models/User');
 // КРИТЕРИЙ: Полный цикл CRUD для REST API.
 const getJournals = async (req, res) => {
   try {
+    // Check roles from DB so changes take effect without re-login
+    const dbUser = await User.findById(req.user.id).select('isAdmin isTeacher').lean();
+
     let filter;
-    if (req.user.isAdmin) {
+    if (dbUser?.isAdmin) {
       filter = {}; // Admins see all
-    } else if (req.user.isTeacher) {
+    } else if (dbUser?.isTeacher) {
       filter = { teacher: req.user.id }; // Teachers see only their assigned journals
     } else {
       filter = { group: req.user.groupId }; // Students see only their group
@@ -50,10 +53,12 @@ const getJournalById = async (req, res) => {
 
     if (!journal) return res.status(404).json({ error: 'Журнал не найден' });
 
-    // Access check: admin ✔ | teacher of this journal ✔ | student of the group ✔
+    // Check from DB (not JWT) so assignement takes effect without re-login
+    const dbUser = await User.findById(req.user.id).select('isAdmin isTeacher').lean();
     const userGroupId = typeof req.user.groupId === 'object' ? req.user.groupId._id : req.user.groupId;
-    const isAssignedTeacher = req.user.isTeacher && String(journal.teacher?._id) === String(req.user.id);
-    if (!req.user.isAdmin && !isAssignedTeacher && String(journal.group._id) !== String(userGroupId)) {
+    const isAssignedTeacher = dbUser?.isTeacher && String(journal.teacher?._id) === String(req.user.id);
+
+    if (!dbUser?.isAdmin && !isAssignedTeacher && String(journal.group._id) !== String(userGroupId)) {
       return res.status(403).json({ error: 'Нет доступа к этому журналу' });
     }
 
