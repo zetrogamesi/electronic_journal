@@ -79,10 +79,44 @@ const toggleAdmin = async (req, res) => {
 /** PUT /api/users/:id/teacher — toggle teacher role (admin only) */
 const toggleTeacher = async (req, res) => {
   try {
+    const Journal = require('../models/Journal');
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
-    user.isTeacher = !user.isTeacher;
+
+    const becomingTeacher = !user.isTeacher;
+    user.isTeacher = becomingTeacher;
     await user.save();
+
+    if (becomingTeacher) {
+      // === Became a teacher ===
+      // Remove them from student rows in all journals of their group
+      if (user.group) {
+        await Journal.updateMany(
+          { group: user.group },
+          { $pull: { students: { user: user._id } } }
+        );
+      }
+    } else {
+      // === Lost teacher role (became student again) ===
+      // 1. Clear teacher field in journals where they were assigned
+      await Journal.updateMany(
+        { teacher: user._id },
+        { $set: { teacher: null } }
+      );
+
+      // 2. Re-add them to student rows in journals of their group
+      if (user.group) {
+        const groupJournals = await Journal.find({ group: user.group });
+        for (const journal of groupJournals) {
+          const alreadyIn = journal.students.some(s => String(s.user) === String(user._id));
+          if (!alreadyIn) {
+            journal.students.push({ user: user._id, order: 9999, grades: [] });
+            await journal.save();
+          }
+        }
+      }
+    }
+
     res.json({ message: 'Роль учителя обновлена', user: { id: user._id, name: user.name, isTeacher: user.isTeacher } });
   } catch (err) {
     console.error('ToggleTeacher error:', err);
