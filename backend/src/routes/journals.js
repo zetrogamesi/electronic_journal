@@ -6,7 +6,7 @@ const { authenticate, adminOnly } = require('../middleware/auth');
 const router = express.Router();
 
 // Grades route MUST be before /:id to avoid Express matching "grades" as an id param
-router.put('/grades/upsert', authenticate, adminOnly, upsertGrade);
+router.put('/grades/upsert', authenticate, upsertGrade);
 router.get('/stats/performance', authenticate, getGroupStats);
 
 // Emergency sync for remote DB

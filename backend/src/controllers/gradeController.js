@@ -1,13 +1,11 @@
 const Journal = require('../models/Journal');
+const User    = require('../models/User');
 
 const ALLOWED = ['', '1', '2', '3', '4', '5', 'н', 'Н', 'зач', 'нез'];
 
 /**
- * PUT /api/journals/grades/upsert (admin)
+ * PUT /api/journals/grades/upsert (admin or assigned teacher)
  * Body: { journal_id, row_id, column_id, value }
- *
- * row_id    = the _id of the students sub-document
- * column_id = the _id of the columns sub-document
  */
 const upsertGrade = async (req, res) => {
   try {
@@ -22,6 +20,13 @@ const upsertGrade = async (req, res) => {
     const journal = await Journal.findById(journal_id);
     if (!journal) return res.status(404).json({ error: 'Журнал не найден' });
 
+    // Check: must be admin or the assigned teacher of this journal
+    const dbUser = await User.findById(req.user.id).select('isAdmin isTeacher').lean();
+    const isAssignedTeacher = dbUser?.isTeacher && String(journal.teacher) === String(req.user.id);
+    if (!dbUser?.isAdmin && !isAssignedTeacher) {
+      return res.status(403).json({ error: 'Нет прав для выставления оценок в этом журнале' });
+    }
+
     // Find the student row
     const studentRow = journal.students.id(row_id);
     if (!studentRow) return res.status(404).json({ error: 'Студент не найден в журнале' });
@@ -34,15 +39,12 @@ const upsertGrade = async (req, res) => {
     const trimmedValue = String(value ?? '').trim();
 
     if (trimmedValue === '') {
-      // Delete: remove the grade entry
       studentRow.grades = studentRow.grades.filter(
         g => String(g.columnId) !== String(column_id)
       );
     } else if (existingGrade) {
-      // Update existing
       existingGrade.value = trimmedValue;
     } else {
-      // Insert new
       studentRow.grades.push({ columnId: column_id, value: trimmedValue });
     }
 

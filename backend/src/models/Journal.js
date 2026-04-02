@@ -60,6 +60,11 @@ const journalSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    teacher: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     columns:  [columnSchema],
     students: [studentRowSchema],
   },

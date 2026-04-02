@@ -12,14 +12,15 @@ export default function CreateJournalPage() {
 
   const [groups, setGroups] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [form, setForm] = useState({ title: '', group_id: '', subject_id: '' });
+  const [teachers, setTeachers] = useState([]);
+  const [form, setForm] = useState({ title: '', group_id: '', subject_id: '', teacher_id: '' });
   const [dates, setDates] = useState(['']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([api.get('/users/groups'), api.get('/users/subjects')])
-      .then(([g, s]) => { setGroups(g.data); setSubjects(s.data); })
+    Promise.all([api.get('/users/groups'), api.get('/users/subjects'), api.get('/users/teachers')])
+      .then(([g, s, tc]) => { setGroups(g.data); setSubjects(s.data); setTeachers(tc.data); })
       .catch(() => toastError(t('createJournal.errFetchData')));
   }, []);
 
@@ -64,6 +65,7 @@ export default function CreateJournalPage() {
         title: form.title.trim(),
         group_id: form.group_id,
         subject_id: form.subject_id || null,
+        teacher_id: form.teacher_id || null,
         dates: validDates
       });
       success(t('createJournal.msgSuccess'));
@@ -118,6 +120,14 @@ export default function CreateJournalPage() {
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">{t('createJournal.teacher')}</label>
+              <select name="teacher_id" className="form-select" value={form.teacher_id} onChange={handleChange}>
+                <option value="">{t('createJournal.teacherSelect')}</option>
+                {teachers.map(tc => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
+              </select>
+              <span className="form-hint">{t('createJournal.teacherHint')}</span>
             </div>
           </div>
         </div>

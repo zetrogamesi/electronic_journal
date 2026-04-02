@@ -61,6 +61,16 @@ export default function AdminPage() {
     }
   };
 
+  const toggleTeacher = async (userId) => {
+    try {
+      const res = await api.put(`/users/${userId}/teacher`);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isTeacher: res.data.user?.isTeacher } : u));
+      success(res.data.message);
+    } catch (err) {
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
+    }
+  };
+
   const deleteUser = async (userId, name) => {
     if (!confirm(t('admin.confirmDeleteUser', { name }))) return;
     try {
@@ -171,13 +181,16 @@ export default function AdminPage() {
                       </td>
                       <td>{u.groupName ? <span className="chip chip-blue">{u.groupName}</span> : <span style={{ color:'var(--text3)' }}>{t('admin.noGroup')}</span>}</td>
                       <td>
-                        {u.isAdmin
-                          ? <span className="chip chip-yellow">{t('admin.roleAdmin')}</span>
-                          : <span className="chip" style={{ background:'var(--bg3)', color:'var(--text3)' }}>{t('admin.roleStudent')}</span>}
+                        <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+                          {u.isAdmin
+                            ? <span className="chip chip-yellow">{t('admin.roleAdmin')}</span>
+                            : <span className="chip" style={{ background:'var(--bg3)', color:'var(--text3)' }}>{t('admin.roleStudent')}</span>}
+                          {u.isTeacher && <span className="chip chip-green">{t('admin.roleTeacher')}</span>}
+                        </div>
                       </td>
                       <td>{new Date(u.createdAt).toLocaleDateString('ru-RU')}</td>
                       <td>
-                        <div style={{ display:'flex', gap:6 }}>
+                        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                           {u.id !== user.id && (
                             <>
                               <button
@@ -186,6 +199,14 @@ export default function AdminPage() {
                                 title={u.isAdmin ? t('admin.revokeTitle') : t('admin.grantTitle')}
                               >
                                 {u.isAdmin ? t('admin.btnRevoke') : t('admin.btnGrant')}
+                              </button>
+                              <button
+                                className="btn btn-ghost btn-xs"
+                                onClick={() => toggleTeacher(u.id)}
+                                title={u.isTeacher ? t('admin.revokeTeacher') : t('admin.grantTeacher')}
+                                style={u.isTeacher ? { color: 'var(--green)', borderColor: 'var(--green)' } : {}}
+                              >
+                                {u.isTeacher ? t('admin.revokeTeacher') : t('admin.grantTeacher')}
                               </button>
                               <button className="btn btn-danger btn-xs" onClick={() => deleteUser(u.id, u.name)}>
                                 

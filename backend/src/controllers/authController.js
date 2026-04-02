@@ -12,11 +12,12 @@ const JWT_EXPIRES = process.env.JWT_EXPIRES || '7d';
 /** Build a safe JWT payload + user object from a User document */
 const buildToken = (user, groupName) => {
   const payload = {
-    id:       user._id,
-    name:     user.name,
-    groupId:  user.group?._id || user.group,
+    id:        user._id,
+    name:      user.name,
+    groupId:   user.group?._id || user.group,
     groupName,
-    isAdmin:  user.isAdmin,
+    isAdmin:   user.isAdmin,
+    isTeacher: user.isTeacher,
   };
   return {
     token: jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES }),

@@ -5,10 +5,18 @@ const User    = require('../models/User');
 // КРИТЕРИЙ: Полный цикл CRUD для REST API.
 const getJournals = async (req, res) => {
   try {
-    const filter = req.user.isAdmin ? {} : { group: req.user.groupId };
+    let filter;
+    if (req.user.isAdmin) {
+      filter = {}; // Admins see all
+    } else if (req.user.isTeacher) {
+      filter = { teacher: req.user.id }; // Teachers see only their assigned journals
+    } else {
+      filter = { group: req.user.groupId }; // Students see only their group
+    }
     const journals = await Journal.find(filter)
       .populate('subject', 'name')
       .populate('group',   'name')
+      .populate('teacher', 'name')
       .populate('createdBy', 'name')
       .sort({ createdAt: -1 })
       .lean();
@@ -18,6 +26,7 @@ const getJournals = async (req, res) => {
       title:        j.title,
       subjectName:  j.subject?.name  || '',
       groupName:    j.group?.name    || '',
+      teacherName:  j.teacher?.name  || '',
       createdByName: j.createdBy?.name || '',
       studentCount: j.students?.length  || 0,
       columnCount:  j.columns?.length   || 0,
@@ -35,14 +44,16 @@ const getJournalById = async (req, res) => {
     const journal = await Journal.findById(req.params.id)
       .populate('subject',   'name')
       .populate('group',     'name')
+      .populate('teacher',   'name')
       .populate('students.user', 'name')
       .lean();
 
     if (!journal) return res.status(404).json({ error: 'Журнал не найден' });
 
-    // Access check for students
+    // Access check: admin ✔ | teacher of this journal ✔ | student of the group ✔
     const userGroupId = typeof req.user.groupId === 'object' ? req.user.groupId._id : req.user.groupId;
-    if (!req.user.isAdmin && String(journal.group._id) !== String(userGroupId)) {
+    const isAssignedTeacher = req.user.isTeacher && String(journal.teacher?._id) === String(req.user.id);
+    if (!req.user.isAdmin && !isAssignedTeacher && String(journal.group._id) !== String(userGroupId)) {
       return res.status(403).json({ error: 'Нет доступа к этому журналу' });
     }
 
@@ -65,6 +76,8 @@ const getJournalById = async (req, res) => {
       subjectName: journal.subject?.name || '',
       groupName:   journal.group?.name   || '',
       groupId:     journal.group?._id,
+      teacherName: journal.teacher?.name || '',
+      teacherId:   journal.teacher?._id  || null,
       createdAt:   journal.createdAt,
       columns,
       students,
@@ -78,7 +91,7 @@ const getJournalById = async (req, res) => {
 /** POST /api/journals — create journal (admin) */
 const createJournal = async (req, res) => {
   try {
-    const { title, subject_id, group_id, dates } = req.body;
+    const { title, subject_id, group_id, teacher_id, dates } = req.body;
 
     if (!title?.trim())             return res.status(400).json({ error: 'Название журнала обязательно' });
     if (!group_id)                   return res.status(400).json({ error: 'Группа обязательна' });
@@ -99,6 +112,7 @@ const createJournal = async (req, res) => {
       title:     title.trim(),
       subject:   subject_id || null,
       group:     group_id,
+      teacher:   teacher_id || null,
       createdBy: req.user.id,
       columns,
       students,

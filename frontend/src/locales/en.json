@@ -119,7 +119,10 @@
     "errDates": "Add at least one date",
     "errFetchData": "Error loading data",
     "errCreate": "Error creating journal",
-    "msgSuccess": "Journal created!"
+    "msgSuccess": "Journal created!",
+    "teacher": "Teacher",
+    "teacherSelect": "No Teacher",
+    "teacherHint": "Optional"
   },
   "admin": {
     "title": "Admin Panel",
@@ -160,7 +163,10 @@
     "msgGroupCreated": "Group created",
     "msgSubjectCreated": "Subject created",
     "errLoad": "Error loading data",
-    "errGeneric": "Error"
+    "errGeneric": "Error",
+    "roleTeacher": "Teacher",
+    "grantTeacher": "Make Teacher",
+    "revokeTeacher": "Remove Teacher"
   },
   "journal": {
     "back": "← Back",
@@ -183,7 +189,8 @@
     "errAddDate": "Error adding date",
     "errDelete": "Deletion error",
     "msgDateAdded": "Date added",
-    "backToHome": "← Home"
+    "backToHome": "← Home",
+    "teacher": "Teacher"
   },
   "notfound": {
     "title": "404",

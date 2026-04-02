@@ -119,7 +119,10 @@
     "errDates": "Кем дегенде бір күн қосыңыз",
     "errFetchData": "Мәліметтерді жүктеу қатесі",
     "errCreate": "Журналды құру қатесі",
-    "msgSuccess": "Журнал құрылды!"
+    "msgSuccess": "Журнал құрылды!",
+    "teacher": "Мұғалім",
+    "teacherSelect": "Мұғалімсіз",
+    "teacherHint": "Міндетті емес"
   },
   "admin": {
     "title": "Әкімші панелі",
@@ -160,7 +163,10 @@
     "msgGroupCreated": "Топ құрылды",
     "msgSubjectCreated": "Пән құрылды",
     "errLoad": "Мәліметтерді жүктеу қатесі",
-    "errGeneric": "Қате"
+    "errGeneric": "Қате",
+    "roleTeacher": "Мұғалім",
+    "grantTeacher": "Мұғалім ету",
+    "revokeTeacher": "Рөлді алу"
   },
   "journal": {
     "back": "← Артқа",
@@ -183,7 +189,8 @@
     "errAddDate": "Күн қосу қатесі",
     "errDelete": "Жою қатесі",
     "msgDateAdded": "Күн қосылды",
-    "backToHome": "← Басты бетке"
+    "backToHome": "← Басты бетке",
+    "teacher": "Мұғалім"
   },
   "notfound": {
     "title": "404",

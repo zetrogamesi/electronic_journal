@@ -205,6 +205,7 @@ export default function JournalPage() {
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')}>{t('journal.back')}</button>
             {journal.groupName   && <span className="chip chip-blue">{journal.groupName}</span>}
             {journal.subjectName && <span className="chip chip-green">{journal.subjectName}</span>}
+            {journal.teacherName && <span className="chip chip-yellow">{t('journal.teacher')}: {journal.teacherName}</span>}
             {saving && <span style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>{t('journal.saving')}</span>}
           </div>
           <h1 className="page-title">{journal.title}</h1>
@@ -288,7 +289,7 @@ export default function JournalPage() {
                         <td key={col._id}>
                           <GradeCell
                             value={grades[key] || ''}
-                            isAdmin={!!user?.isAdmin}
+                            isAdmin={!!(user?.isAdmin || user?.isTeacher)}
                             onSave={val => handleGradeSave(st.rowId, col._id, val)}
                           />
                         </td>

@@ -119,7 +119,10 @@
     "errDates": "Добавьте хотя бы одну дату",
     "errFetchData": "Ошибка загрузки данных",
     "errCreate": "Ошибка создания журнала",
-    "msgSuccess": "Журнал создан!"
+    "msgSuccess": "Журнал создан!",
+    "teacher": "Учитель",
+    "teacherSelect": "Без учителя",
+    "teacherHint": "Необязательно"
   },
   "admin": {
     "title": "Панель администратора",
@@ -160,7 +163,10 @@
     "msgGroupCreated": "Группа создана",
     "msgSubjectCreated": "Предмет создан",
     "errLoad": "Ошибка загрузки данных",
-    "errGeneric": "Ошибка"
+    "errGeneric": "Ошибка",
+    "roleTeacher": "Учитель",
+    "grantTeacher": "Назначить учителем",
+    "revokeTeacher": "Снять роль учителя"
   },
   "journal": {
     "back": "← Назад",
@@ -183,7 +189,8 @@
     "errAddDate": "Ошибка добавления даты",
     "errDelete": "Ошибка удаления",
     "msgDateAdded": "Дата добавлена",
-    "backToHome": "← На главную"
+    "backToHome": "← На главную",
+    "teacher": "Учитель"
   },
   "notfound": {
     "title": "404",

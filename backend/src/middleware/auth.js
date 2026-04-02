@@ -39,4 +39,40 @@ const adminOnly = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticate, adminOnly };
+/**
+ * teacherOrAdmin — allows access if the user is admin OR is the teacher
+ * assigned to the journal in question (journal_id from req.body or req.params.id).
+ */
+const Journal = require('../models/Journal');
+const teacherOrAdmin = async (req, res, next) => {
+  try {
+    const dbUser = await User.findById(req.user.id).select('isAdmin isTeacher').lean();
+    if (!dbUser) return res.status(403).json({ error: 'Пользователь не найден' });
+
+    // Admins always pass
+    if (dbUser.isAdmin) {
+      req.user.isAdmin = true;
+      return next();
+    }
+
+    // Teachers must be assigned to the specific journal
+    if (dbUser.isTeacher) {
+      const journalId = req.body?.journal_id || req.params?.id;
+      if (!journalId) return res.status(403).json({ error: 'Доступ запрещён' });
+
+      const journal = await Journal.findById(journalId).select('teacher').lean();
+      if (journal && String(journal.teacher) === String(dbUser._id || req.user.id)) {
+        req.user.isTeacher = true;
+        return next();
+      }
+      return res.status(403).json({ error: 'Вы не являетесь учителем этого журнала' });
+    }
+
+    return res.status(403).json({ error: 'Доступ запрещён. Требуются права учителя или администратора.' });
+  } catch (err) {
+    console.error('teacherOrAdmin check error:', err);
+    return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
+module.exports = { authenticate, adminOnly, teacherOrAdmin };

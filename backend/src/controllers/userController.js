@@ -15,10 +15,21 @@ const getAllUsers = async (req, res) => {
       groupId:   u.group?._id,
       groupName: u.group?.name || '',
       isAdmin:   u.isAdmin,
+      isTeacher: u.isTeacher || false,
       createdAt: u.createdAt,
     })));
   } catch (err) {
     console.error('GetAllUsers error:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
+/** GET /api/users/teachers — list users with isTeacher = true */
+const getTeachers = async (req, res) => {
+  try {
+    const teachers = await User.find({ isTeacher: true }).sort('name').lean();
+    res.json(teachers.map(u => ({ id: u._id, name: u.name })));
+  } catch (err) {
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 };
@@ -61,6 +72,20 @@ const toggleAdmin = async (req, res) => {
     res.json({ message: 'Права обновлены', user: { id: user._id, name: user.name, isAdmin: user.isAdmin } });
   } catch (err) {
     console.error('ToggleAdmin error:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
+/** PUT /api/users/:id/teacher — toggle teacher role (admin only) */
+const toggleTeacher = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    user.isTeacher = !user.isTeacher;
+    await user.save();
+    res.json({ message: 'Роль учителя обновлена', user: { id: user._id, name: user.name, isTeacher: user.isTeacher } });
+  } catch (err) {
+    console.error('ToggleTeacher error:', err);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 };
@@ -124,4 +149,4 @@ const createSubject = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, updateProfile, toggleAdmin, deleteUser, getGroups, createGroup, getSubjects, createSubject };
+module.exports = { getAllUsers, updateProfile, toggleAdmin, toggleTeacher, getTeachers, deleteUser, getGroups, createGroup, getSubjects, createSubject };
