@@ -275,6 +275,43 @@ td { padding: 11px 14px; color: var(--text2); vertical-align: middle; }
 .journal-table tbody tr:last-child td { border-bottom: none; }
 .journal-table tbody tr:hover td.col-name { background: var(--bg3); }
 
+/* ── Column Header Delete Button ─────────────────────────────── */
+.col-header-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.col-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 0 5px rgba(247, 95, 95, 0.4);
+}
+.col-header-wrap:hover .col-delete-btn {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.col-delete-btn:hover {
+  background: #ff7676 !important;
+  transform: scale(1.2) !important;
+}
+
 .grade-cell {
   width: 100%; height: 40px;
   display: flex; align-items: center; justify-content: center;

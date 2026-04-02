@@ -1,5 +1,5 @@
 const express = require('express');
-const { getJournals, getJournalById, getGroupStats, createJournal, deleteJournal, addColumn } = require('../controllers/journalController');
+const { getJournals, getJournalById, getGroupStats, createJournal, deleteJournal, addColumn, deleteColumn } = require('../controllers/journalController');
 const { upsertGrade } = require('../controllers/gradeController');
 const { authenticate, adminOnly } = require('../middleware/auth');
 
@@ -18,5 +18,6 @@ router.get('/:id', authenticate, getJournalById);
 router.post('/', authenticate, adminOnly, createJournal);
 router.delete('/:id', authenticate, adminOnly, deleteJournal);
 router.post('/:id/columns', authenticate, adminOnly, addColumn);
+router.delete('/:id/columns/:colId', authenticate, adminOnly, deleteColumn);
 
 module.exports = router;

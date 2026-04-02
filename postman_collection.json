@@ -1,0 +1,103 @@
+{
+  "info": {
+    "name": "Electronic Journal API",
+    "description": "API endpoints for the Electronic Journal project.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Авторизация (Auth)",
+      "item": [
+        {
+          "name": "Регистрация",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] } }
+        },
+        {
+          "name": "Вход в аккаунт",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] } }
+        },
+        {
+          "name": "Данные профиля",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] } }
+        }
+      ]
+    },
+    {
+      "name": "Пользователи (Users)",
+      "item": [
+        {
+          "name": "Список юзеров",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] } }
+        },
+        {
+          "name": "Обновление профиля",
+          "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] } }
+        },
+        {
+          "name": "Управление правами",
+          "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/api/users/:id/admin", "host": ["{{baseUrl}}"], "path": ["api", "users", ":id", "admin"] } }
+        },
+        {
+          "name": "Удаление профиля",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/users/:id", "host": ["{{baseUrl}}"], "path": ["api", "users", ":id"] } }
+        },
+        {
+          "name": "Список групп",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users/groups", "host": ["{{baseUrl}}"], "path": ["api", "users", "groups"] } }
+        },
+        {
+          "name": "Создать группу",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/users/groups", "host": ["{{baseUrl}}"], "path": ["api", "users", "groups"] } }
+        },
+        {
+          "name": "Список предметов",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users/subjects", "host": ["{{baseUrl}}"], "path": ["api", "users", "subjects"] } }
+        },
+        {
+          "name": "Создать предмет",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/users/subjects", "host": ["{{baseUrl}}"], "path": ["api", "users", "subjects"] } }
+        }
+      ]
+    },
+    {
+      "name": "Журналы (Journals)",
+      "item": [
+        {
+          "name": "Список журналов",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/journals", "host": ["{{baseUrl}}"], "path": ["api", "journals"] } }
+        },
+        {
+          "name": "Получение журнала",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/journals/:id", "host": ["{{baseUrl}}"], "path": ["api", "journals", ":id"] } }
+        },
+        {
+          "name": "Рейтинг успеваемости",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/journals/stats/performance", "host": ["{{baseUrl}}"], "path": ["api", "journals", "stats", "performance"] } }
+        },
+        {
+          "name": "Добавить столбец",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/journals/:id/columns", "host": ["{{baseUrl}}"], "path": ["api", "journals", ":id", "columns"] } }
+        },
+        {
+          "name": "Выставить оценку",
+          "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/api/journals/grades/upsert", "host": ["{{baseUrl}}"], "path": ["api", "journals", "grades", "upsert"] } }
+        },
+        {
+          "name": "Удаление журнала",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/journals/:id", "host": ["{{baseUrl}}"], "path": ["api", "journals", ":id"] } }
+        },
+        {
+          "name": "Создать журнал",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/journals", "host": ["{{baseUrl}}"], "path": ["api", "journals"] } }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}

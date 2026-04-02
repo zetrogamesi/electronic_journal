@@ -210,7 +210,31 @@ const forceSyncStudents = async (req, res) => {
   }
 };
 
+/** DELETE /api/journals/:id/columns/:colId (admin only) */
+const deleteColumn = async (req, res) => {
+  try {
+    const journal = await Journal.findById(req.params.id);
+    if (!journal) return res.status(404).json({ error: 'Журнал не найден' });
+
+    // Remove the column
+    journal.columns = journal.columns.filter(c => String(c._id) !== req.params.colId);
+
+    // Remove any grades associated with this column
+    for (const student of journal.students) {
+      if (student.grades) {
+        student.grades = student.grades.filter(g => String(g.columnId) !== req.params.colId);
+      }
+    }
+
+    await journal.save();
+    res.json({ message: 'Колонка удалена' });
+  } catch (err) {
+    console.error('Delete column error:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
 module.exports = { 
   getJournals, getJournalById, getGroupStats, createJournal, 
-  deleteJournal, addColumn, forceSyncStudents 
+  deleteJournal, addColumn, forceSyncStudents, deleteColumn 
 };

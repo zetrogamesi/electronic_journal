@@ -160,6 +160,17 @@ export default function JournalPage() {
     }
   };
 
+  const handleDeleteColumn = async (colId) => {
+    if (!confirm('Вы уверены, что хотите удалить эту дату? Это удалит все оценки за этот день.')) return;
+    try {
+      await api.delete(`/journals/${id}/columns/${colId}`);
+      success('День успешно удален');
+      loadJournal();
+    } catch (err) {
+      toastError(err.response?.data?.error || 'Ошибка удаления даты');
+    }
+  };
+
   const fmtDate = d =>
     new Date(d).toLocaleDateString(t('home.localeDate') || 'ru-RU', { day: 'numeric', month: 'short' });
 
@@ -234,7 +245,18 @@ export default function JournalPage() {
               <tr>
                 <th className="col-name">{t('journal.colNumName')}</th>
                 {columns.map(col => (
-                  <th key={col._id}>{fmtDate(col.lessonDate)}</th>
+                  <th key={col._id}>
+                    <div className="col-header-wrap">
+                      {fmtDate(col.lessonDate)}
+                      {user?.isAdmin && (
+                        <button 
+                          className="col-delete-btn" 
+                          title="Удалить день"
+                          onClick={() => handleDeleteColumn(col._id)}
+                        >✕</button>
+                      )}
+                    </div>
+                  </th>
                 ))}
                 <th style={{ minWidth: 56, background: 'var(--bg3)' }}>{t('journal.colAvg')}</th>
               </tr>
