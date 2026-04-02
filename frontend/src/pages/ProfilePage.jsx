@@ -83,14 +83,27 @@ export default function ProfilePage() {
           {initials}
         </div>
         <div>
-          <div style={{ fontSize:'1.3rem', fontWeight:700, color:'var(--text)' }}>
+          <div style={{ fontSize:'1.3rem', fontWeight:700, color:'var(--text)', display:'flex', alignItems:'center', flexWrap:'wrap', gap:8 }}>
             {user?.name}
-            {user?.isAdmin && <span className="badge-admin" style={{ marginLeft:10 }}>{t('profile.adminBadge')}</span>}
+            {user?.isAdmin   && <span className="badge-admin">{t('profile.adminBadge')}</span>}
+            {user?.isTeacher && <span className="badge-teacher">TEACHER</span>}
           </div>
           <div style={{ color:'var(--text3)', marginTop:4, fontSize:'0.88rem' }}>
             {t('profile.group')} <strong style={{ color:'var(--text2)' }}>{user?.groupName || '—'}</strong>
             &nbsp;·&nbsp; {t('profile.joinDate')} <strong style={{ color:'var(--text2)' }}>{joinDate}</strong>
           </div>
+          {user?.isTeacher && (
+            <div style={{ marginTop: 8 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'var(--green-bg)', color: 'var(--green)',
+                border: '1px solid var(--green)', borderRadius: 8,
+                padding: '4px 12px', fontSize: '0.82rem', fontWeight: 600
+              }}>
+                Вы являетесь учителем — можете выставлять оценки в назначенных журналах
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
