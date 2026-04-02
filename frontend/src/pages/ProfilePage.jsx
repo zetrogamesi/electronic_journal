@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useToast } from '../hooks/useToast';
@@ -6,6 +7,7 @@ import ToastContainer from '../components/ToastContainer';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
+  const { t } = useTranslation();
   const { toasts, success, error: toastError } = useToast();
 
   const [nameForm, setNameForm] = useState({ name: user?.name || '' });
@@ -18,16 +20,16 @@ export default function ProfilePage() {
   const handleNameSave = async e => {
     e.preventDefault();
     setNameError('');
-    if (!nameForm.name.trim()) { setNameError('Имя не может быть пустым'); return; }
-    if (nameForm.name.trim() === user?.name) { setNameError('Имя не изменилось'); return; }
+    if (!nameForm.name.trim()) { setNameError(t('profile.errNameEmpty')); return; }
+    if (nameForm.name.trim() === user?.name) { setNameError(t('profile.errNameSame')); return; }
 
     setNameLoading(true);
     try {
       const res = await api.put('/users/me', { name: nameForm.name.trim() });
       updateUser({ ...user, name: res.data.user.name });
-      success('Имя успешно обновлено');
+      success(t('profile.msgNameSuccess'));
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка сохранения');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     } finally {
       setNameLoading(false);
     }
@@ -36,16 +38,16 @@ export default function ProfilePage() {
   const handlePwSave = async e => {
     e.preventDefault();
     setPwError('');
-    if (pwForm.password.length < 6)  { setPwError('Пароль не менее 6 символов'); return; }
-    if (pwForm.password !== pwForm.confirm) { setPwError('Пароли не совпадают'); return; }
+    if (pwForm.password.length < 6)  { setPwError(t('profile.errPwLen')); return; }
+    if (pwForm.password !== pwForm.confirm) { setPwError(t('profile.errPwMatch')); return; }
 
     setPwLoading(true);
     try {
       await api.put('/users/me', { password: pwForm.password });
       setPwForm({ password: '', confirm: '' });
-      success('Пароль успешно изменён');
+      success(t('profile.msgPwSuccess'));
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка смены пароля');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     } finally {
       setPwLoading(false);
     }
@@ -56,7 +58,7 @@ export default function ProfilePage() {
     : '?';
 
   const joinDate = user?.createdAt
-    ? new Date(user?.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })
+    ? new Date(user?.createdAt).toLocaleDateString(t('home.localeDate') || 'ru-RU', { day:'numeric', month:'long', year:'numeric' })
     : '—';
 
   return (
@@ -65,8 +67,8 @@ export default function ProfilePage() {
 
       <div className="page-header">
         <div>
-          <h1 className="page-title">Профиль</h1>
-          <p className="page-subtitle">Управление аккаунтом</p>
+          <h1 className="page-title">{t('profile.title')}</h1>
+          <p className="page-subtitle">{t('profile.subtitle')}</p>
         </div>
       </div>
 
@@ -83,11 +85,11 @@ export default function ProfilePage() {
         <div>
           <div style={{ fontSize:'1.3rem', fontWeight:700, color:'var(--text)' }}>
             {user?.name}
-            {user?.isAdmin && <span className="badge-admin" style={{ marginLeft:10 }}>ADMIN</span>}
+            {user?.isAdmin && <span className="badge-admin" style={{ marginLeft:10 }}>{t('profile.adminBadge')}</span>}
           </div>
           <div style={{ color:'var(--text3)', marginTop:4, fontSize:'0.88rem' }}>
-            Группа: <strong style={{ color:'var(--text2)' }}>{user?.groupName || '—'}</strong>
-            &nbsp;·&nbsp; Дата регистрации: <strong style={{ color:'var(--text2)' }}>{joinDate}</strong>
+            {t('profile.group')} <strong style={{ color:'var(--text2)' }}>{user?.groupName || '—'}</strong>
+            &nbsp;·&nbsp; {t('profile.joinDate')} <strong style={{ color:'var(--text2)' }}>{joinDate}</strong>
           </div>
         </div>
       </div>
@@ -96,22 +98,22 @@ export default function ProfilePage() {
         {/* Change name */}
         <div className="card">
           <h2 style={{ fontFamily:'var(--font-head)', fontSize:'1.1rem', marginBottom:18 }}>
-            ✏️ Изменить имя
+            {t('profile.editName')}
           </h2>
           <form onSubmit={handleNameSave} noValidate>
             <div className="modal-form">
               {nameError && <div className="alert alert-error">⚠ {nameError}</div>}
               <div className="form-group">
-                <label className="form-label">Новое имя</label>
+                <label className="form-label">{t('profile.newName')}</label>
                 <input
                   className="form-input"
                   value={nameForm.name}
                   onChange={e => { setNameForm({ name: e.target.value }); setNameError(''); }}
-                  placeholder="Введите имя"
+                  placeholder={t('profile.newNamePlaceholder')}
                 />
               </div>
               <button className="btn btn-primary" type="submit" disabled={nameLoading}>
-                {nameLoading ? 'Сохранение...' : '✓ Сохранить имя'}
+                {nameLoading ? t('profile.saveNameLoading') : t('profile.saveName')}
               </button>
             </div>
           </form>
@@ -120,31 +122,31 @@ export default function ProfilePage() {
         {/* Change password */}
         <div className="card">
           <h2 style={{ fontFamily:'var(--font-head)', fontSize:'1.1rem', marginBottom:18 }}>
-            🔒 Изменить пароль
+            {t('profile.editPassword')}
           </h2>
           <form onSubmit={handlePwSave} noValidate>
             <div className="modal-form">
               {pwError && <div className="alert alert-error">⚠ {pwError}</div>}
               <div className="form-group">
-                <label className="form-label">Новый пароль</label>
+                <label className="form-label">{t('profile.newPassword')}</label>
                 <input
                   type="password" className="form-input"
                   value={pwForm.password}
                   onChange={e => { setPwForm(f => ({ ...f, password: e.target.value })); setPwError(''); }}
-                  placeholder="Минимум 6 символов"
+                  placeholder={t('profile.newPasswordPlaceholder')}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Подтвердите пароль</label>
+                <label className="form-label">{t('profile.confirmPassword')}</label>
                 <input
                   type="password" className="form-input"
                   value={pwForm.confirm}
                   onChange={e => { setPwForm(f => ({ ...f, confirm: e.target.value })); setPwError(''); }}
-                  placeholder="Повторите пароль"
+                  placeholder={t('profile.confirmPasswordPlaceholder')}
                 />
               </div>
               <button className="btn btn-primary" type="submit" disabled={pwLoading}>
-                {pwLoading ? 'Сохранение...' : '✓ Сменить пароль'}
+                {pwLoading ? t('profile.savePasswordLoading') : t('profile.savePassword')}
               </button>
             </div>
           </form>

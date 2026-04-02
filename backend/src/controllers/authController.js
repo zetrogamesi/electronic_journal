@@ -1,7 +1,8 @@
-const bcrypt = require('bcrypt');
-const jwt    = require('jsonwebtoken');
-const User   = require('../models/User');
-const Group  = require('../models/Group');
+const bcrypt  = require('bcrypt');
+const jwt     = require('jsonwebtoken');
+const User    = require('../models/User');
+const Group   = require('../models/Group');
+const Journal = require('../models/Journal');
 
 const SALT_ROUNDS = 12;
 const JWT_SECRET  = process.env.JWT_SECRET  || 'secret_key_change_in_prod';
@@ -12,7 +13,7 @@ const buildToken = (user, groupName) => {
   const payload = {
     id:       user._id,
     name:     user.name,
-    groupId:  user.group,
+    groupId:  user.group?._id || user.group,
     groupName,
     isAdmin:  user.isAdmin,
   };
@@ -46,6 +47,12 @@ const register = async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ name: name.trim(), group: group_id, passwordHash });
+
+    // Auto-add the new student to all existing journals of this group
+    await Journal.updateMany(
+      { group: group_id },
+      { $push: { students: { user: user._id, order: 9999, grades: [] } } }
+    );
 
     const { token, user: payload } = buildToken(user, group.name);
     res.status(201).json({ message: 'Регистрация прошла успешно', token, user: payload });

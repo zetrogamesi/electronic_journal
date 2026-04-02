@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
@@ -20,6 +21,7 @@ function Modal({ title, onClose, children }) {
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { toasts, success, error: toastError } = useToast();
 
   const [tab, setTab] = useState('users');
@@ -43,7 +45,7 @@ export default function AdminPage() {
       setUsers(u.data);
       setGroups(g.data);
       setSubjects(s.data);
-    }).catch(() => toastError('Ошибка загрузки данных'))
+    }).catch(() => toastError(t('admin.errLoad')))
       .finally(() => setLoading(false));
   };
 
@@ -55,18 +57,18 @@ export default function AdminPage() {
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, isAdmin: res.data.user?.isAdmin } : u));
       success(res.data.message);
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     }
   };
 
   const deleteUser = async (userId, name) => {
-    if (!confirm(`Удалить пользователя "${name}"?`)) return;
+    if (!confirm(t('admin.confirmDeleteUser', { name }))) return;
     try {
       await api.delete(`/users/${userId}`);
       setUsers(prev => prev.filter(u => u.id !== userId));
-      success('Пользователь удалён');
+      success(t('admin.msgUserDeleted'));
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     }
   };
 
@@ -77,9 +79,9 @@ export default function AdminPage() {
       setGroups(prev => [...prev, res.data]);
       setNewGroup('');
       setGroupModal(false);
-      success('Группа создана');
+      success(t('admin.msgGroupCreated'));
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     }
   };
 
@@ -90,16 +92,16 @@ export default function AdminPage() {
       setSubjects(prev => [...prev, res.data]);
       setNewSubject('');
       setSubjectModal(false);
-      success('Предмет создан');
+      success(t('admin.msgSubjectCreated'));
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка');
+      toastError(err.response?.data?.error || t('admin.errGeneric'));
     }
   };
 
   const tabs = [
-    { key: 'users',    label: '👥 Пользователи' },
-    { key: 'groups',   label: '🏫 Группы' },
-    { key: 'subjects', label: '📚 Предметы' },
+    { key: 'users',    label: t('admin.tabUsers') },
+    { key: 'groups',   label: t('admin.tabGroups') },
+    { key: 'subjects', label: t('admin.tabSubjects') },
   ];
 
   return (
@@ -108,18 +110,18 @@ export default function AdminPage() {
 
       <div className="page-header">
         <div>
-          <h1 className="page-title">Панель администратора</h1>
-          <p className="page-subtitle">Управление пользователями, группами и предметами</p>
+          <h1 className="page-title">{t('admin.title')}</h1>
+          <p className="page-subtitle">{t('admin.subtitle')}</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid" style={{ gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', marginBottom:28 }}>
         {[
-          { value: users.length,    label: 'Пользователей' },
-          { value: users.filter(u=>u.isAdmin).length, label: 'Администраторов' },
-          { value: groups.length,   label: 'Групп' },
-          { value: subjects.length, label: 'Предметов' },
+          { value: users.length,    label: t('admin.statUsers') },
+          { value: users.filter(u=>u.isAdmin).length, label: t('admin.statAdmins') },
+          { value: groups.length,   label: t('admin.statGroups') },
+          { value: subjects.length, label: t('admin.statSubjects') },
         ].map((s, i) => (
           <div key={i} className="stat-card">
             <div className="stat-card__value">{s.value}</div>
@@ -157,7 +159,7 @@ export default function AdminPage() {
               <table>
                 <thead>
                   <tr>
-                    <th>Имя</th><th>Группа</th><th>Роль</th><th>Дата регистрации</th><th>Действия</th>
+                    <th>{t('admin.thName')}</th><th>{t('admin.thGroup')}</th><th>{t('admin.thRole')}</th><th>{t('admin.thDate')}</th><th>{t('admin.thActions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,13 +167,13 @@ export default function AdminPage() {
                     <tr key={u.id}>
                       <td style={{ color:'var(--text)', fontWeight:500 }}>
                         {u.name}
-                        {u.id === user.id && <span style={{ color:'var(--text3)', fontSize:'0.75rem', marginLeft:6 }}>(вы)</span>}
+                        {u.id === user.id && <span style={{ color:'var(--text3)', fontSize:'0.75rem', marginLeft:6 }}>{t('admin.you')}</span>}
                       </td>
-                      <td>{u.groupName ? <span className="chip chip-blue">{u.groupName}</span> : <span style={{ color:'var(--text3)' }}>—</span>}</td>
+                      <td>{u.groupName ? <span className="chip chip-blue">{u.groupName}</span> : <span style={{ color:'var(--text3)' }}>{t('admin.noGroup')}</span>}</td>
                       <td>
                         {u.isAdmin
-                          ? <span className="chip chip-yellow">⚙️ Администратор</span>
-                          : <span className="chip" style={{ background:'var(--bg3)', color:'var(--text3)' }}>Студент</span>}
+                          ? <span className="chip chip-yellow">{t('admin.roleAdmin')}</span>
+                          : <span className="chip" style={{ background:'var(--bg3)', color:'var(--text3)' }}>{t('admin.roleStudent')}</span>}
                       </td>
                       <td>{new Date(u.createdAt).toLocaleDateString('ru-RU')}</td>
                       <td>
@@ -181,12 +183,12 @@ export default function AdminPage() {
                               <button
                                 className="btn btn-ghost btn-xs"
                                 onClick={() => toggleAdmin(u.id)}
-                                title={u.isAdmin ? 'Снять права' : 'Дать права'}
+                                title={u.isAdmin ? t('admin.revokeTitle') : t('admin.grantTitle')}
                               >
-                                {u.isAdmin ? '↓ Студент' : '↑ Админ'}
+                                {u.isAdmin ? t('admin.btnRevoke') : t('admin.btnGrant')}
                               </button>
                               <button className="btn btn-danger btn-xs" onClick={() => deleteUser(u.id, u.name)}>
-                                🗑
+                                
                               </button>
                             </>
                           )}
@@ -203,15 +205,15 @@ export default function AdminPage() {
           {tab === 'groups' && (
             <>
               <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
-                <button className="btn btn-primary btn-sm" onClick={() => setGroupModal(true)}>+ Новая группа</button>
+                <button className="btn btn-primary btn-sm" onClick={() => setGroupModal(true)}>{t('admin.btnNewGroup')}</button>
               </div>
               <div className="grid grid-3">
                 {groups.map(g => (
                   <div key={g.id} className="card">
-                    <div style={{ fontSize:'1.5rem', marginBottom:8 }}>🏫</div>
+                    <div style={{ fontSize:'1.5rem', marginBottom:8 }}></div>
                     <div style={{ fontWeight:700, color:'var(--text)' }}>{g.name}</div>
                     <div style={{ fontSize:'0.8rem', color:'var(--text3)', marginTop:4 }}>
-                      {users.filter(u => u.groupId === String(g.id)).length} студентов
+                      {t('admin.studentsCount', { count: users.filter(u => u.groupId === String(g.id)).length })}
                     </div>
                   </div>
                 ))}
@@ -223,12 +225,12 @@ export default function AdminPage() {
           {tab === 'subjects' && (
             <>
               <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
-                <button className="btn btn-primary btn-sm" onClick={() => setSubjectModal(true)}>+ Новый предмет</button>
+                <button className="btn btn-primary btn-sm" onClick={() => setSubjectModal(true)}>{t('admin.btnNewSubject')}</button>
               </div>
               <div className="grid grid-3">
                 {subjects.map(s => (
                   <div key={s.id} className="card">
-                    <div style={{ fontSize:'1.5rem', marginBottom:8 }}>📚</div>
+                    <div style={{ fontSize:'1.5rem', marginBottom:8 }}></div>
                     <div style={{ fontWeight:700, color:'var(--text)' }}>{s.name}</div>
                   </div>
                 ))}
@@ -240,22 +242,22 @@ export default function AdminPage() {
 
       {/* Group modal */}
       {groupModal && (
-        <Modal title="Новая группа" onClose={() => setGroupModal(false)}>
+        <Modal title={t('admin.modalNewGroup')} onClose={() => setGroupModal(false)}>
           <div className="modal-form">
             <div className="form-group">
-              <label className="form-label">Название группы</label>
+              <label className="form-label">{t('admin.modalGroupName')}</label>
               <input
                 className="form-input"
                 value={newGroup}
                 onChange={e => setNewGroup(e.target.value)}
-                placeholder="Например: ИС-23"
+                placeholder={t('admin.modalGroupPlaceholder')}
                 autoFocus
                 onKeyDown={e => e.key === 'Enter' && createGroup()}
               />
             </div>
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => setGroupModal(false)}>Отмена</button>
-              <button className="btn btn-primary" onClick={createGroup}>Создать</button>
+              <button className="btn btn-ghost" onClick={() => setGroupModal(false)}>{t('admin.cancel')}</button>
+              <button className="btn btn-primary" onClick={createGroup}>{t('admin.create')}</button>
             </div>
           </div>
         </Modal>
@@ -263,22 +265,22 @@ export default function AdminPage() {
 
       {/* Subject modal */}
       {subjectModal && (
-        <Modal title="Новый предмет" onClose={() => setSubjectModal(false)}>
+        <Modal title={t('admin.modalNewSubject')} onClose={() => setSubjectModal(false)}>
           <div className="modal-form">
             <div className="form-group">
-              <label className="form-label">Название предмета</label>
+              <label className="form-label">{t('admin.modalSubjectName')}</label>
               <input
                 className="form-input"
                 value={newSubject}
                 onChange={e => setNewSubject(e.target.value)}
-                placeholder="Например: Физика"
+                placeholder={t('admin.modalSubjectPlaceholder')}
                 autoFocus
                 onKeyDown={e => e.key === 'Enter' && createSubject()}
               />
             </div>
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => setSubjectModal(false)}>Отмена</button>
-              <button className="btn btn-primary" onClick={createSubject}>Создать</button>
+              <button className="btn btn-ghost" onClick={() => setSubjectModal(false)}>{t('admin.cancel')}</button>
+              <button className="btn btn-primary" onClick={createSubject}>{t('admin.create')}</button>
             </div>
           </div>
         </Modal>

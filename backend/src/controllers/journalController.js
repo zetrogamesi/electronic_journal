@@ -40,7 +40,8 @@ const getJournalById = async (req, res) => {
     if (!journal) return res.status(404).json({ error: 'Журнал не найден' });
 
     // Access check for students
-    if (!req.user.isAdmin && String(journal.group._id) !== String(req.user.groupId)) {
+    const userGroupId = typeof req.user.groupId === 'object' ? req.user.groupId._id : req.user.groupId;
+    if (!req.user.isAdmin && String(journal.group._id) !== String(userGroupId)) {
       return res.status(403).json({ error: 'Нет доступа к этому журналу' });
     }
 
@@ -141,4 +142,41 @@ const addColumn = async (req, res) => {
   }
 };
 
-module.exports = { getJournals, getJournalById, createJournal, deleteJournal, addColumn };
+/** GET /api/journals/stats/performance */
+const getGroupStats = async (req, res) => {
+  try {
+    const journals = await Journal.find().populate('group', 'name').lean();
+    const stats = {};
+
+    for (const j of journals) {
+      const gName = j.group?.name || 'Без группы';
+      if (!stats[gName]) stats[gName] = { total: 0, count: 0 };
+
+      for (const st of j.students) {
+        for (const grade of st.grades) {
+          if (!grade.value) continue;
+          const v = grade.value.trim().toLowerCase();
+          if (['1', '2', '3', '4', '5'].includes(v)) {
+            stats[gName].total += Number(v);
+            stats[gName].count++;
+          } else if (v === 'н') {
+            stats[gName].total += 0;
+            stats[gName].count++;
+          }
+        }
+      }
+    }
+
+    const result = Object.entries(stats)
+      .filter(([_, data]) => data.count > 0)
+      .map(([name, data]) => ({ name, avg: Number((data.total / data.count).toFixed(2)) }))
+      .sort((a, b) => b.avg - a.avg);
+
+    res.json(result);
+  } catch (err) {
+    console.error('GetGroupStats error:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
+module.exports = { getJournals, getJournalById, getGroupStats, createJournal, deleteJournal, addColumn };

@@ -57,6 +57,18 @@ img { max-width: 100%; display: block; }
 }
 .page-wrap--wide { max-width: 1400px; }
 
+.home-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Navbar ──────────────────────────────────────────────────── */
 .navbar {
   position: sticky;

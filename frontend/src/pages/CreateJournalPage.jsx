@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/ToastContainer';
 
 export default function CreateJournalPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { toasts, success, error: toastError } = useToast();
 
   const [groups, setGroups] = useState([]);
@@ -18,7 +20,7 @@ export default function CreateJournalPage() {
   useEffect(() => {
     Promise.all([api.get('/users/groups'), api.get('/users/subjects')])
       .then(([g, s]) => { setGroups(g.data); setSubjects(s.data); })
-      .catch(() => toastError('Ошибка загрузки данных'));
+      .catch(() => toastError(t('createJournal.errFetchData')));
   }, []);
 
   const handleChange = e => {
@@ -51,10 +53,10 @@ export default function CreateJournalPage() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.title.trim()) { setError('Введите название журнала'); return; }
-    if (!form.group_id) { setError('Выберите группу'); return; }
+    if (!form.title.trim()) { setError(t('createJournal.errTitle')); return; }
+    if (!form.group_id) { setError(t('createJournal.errGroup')); return; }
     const validDates = dates.filter(d => d.trim());
-    if (validDates.length === 0) { setError('Добавьте хотя бы одну дату'); return; }
+    if (validDates.length === 0) { setError(t('createJournal.errDates')); return; }
 
     setLoading(true);
     try {
@@ -64,10 +66,10 @@ export default function CreateJournalPage() {
         subject_id: form.subject_id || null,
         dates: validDates
       });
-      success('Журнал создан!');
+      success(t('createJournal.msgSuccess'));
       setTimeout(() => navigate(`/journal/${res.data.journal.id}`), 800);
     } catch (err) {
-      setError(err.response?.data?.error || 'Ошибка создания журнала');
+      setError(err.response?.data?.error || t('createJournal.errCreate'));
     } finally {
       setLoading(false);
     }
@@ -79,10 +81,10 @@ export default function CreateJournalPage() {
 
       <div className="page-header">
         <div>
-          <h1 className="page-title">Создать журнал</h1>
-          <p className="page-subtitle">Новый журнал будет виден всем студентам выбранной группы</p>
+          <h1 className="page-title">{t('createJournal.title')}</h1>
+          <p className="page-subtitle">{t('createJournal.subtitle')}</p>
         </div>
-        <button className="btn btn-ghost" onClick={() => navigate('/')}>← Назад</button>
+        <button className="btn btn-ghost" onClick={() => navigate('/')}>{t('createJournal.back')}</button>
       </div>
 
       {error && <div className="alert alert-error" style={{ marginBottom:20 }}>⚠ {error}</div>}
@@ -90,29 +92,29 @@ export default function CreateJournalPage() {
       <form onSubmit={handleSubmit} noValidate>
         <div className="card" style={{ marginBottom:20 }}>
           <h3 style={{ fontFamily:'var(--font-head)', marginBottom:18, fontSize:'1rem', color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.06em' }}>
-            Основная информация
+            {t('createJournal.mainInfo')}
           </h3>
           <div className="modal-form">
             <div className="form-group">
-              <label className="form-label">Название журнала *</label>
+              <label className="form-label">{t('createJournal.journalTitle')}</label>
               <input
                 name="title" className="form-input"
-                placeholder="Например: Информатика — 2-й семестр"
+                placeholder={t('createJournal.journalTitlePlaceholder')}
                 value={form.title} onChange={handleChange} autoFocus
               />
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
               <div className="form-group">
-                <label className="form-label">Группа *</label>
+                <label className="form-label">{t('createJournal.group')}</label>
                 <select name="group_id" className="form-select" value={form.group_id} onChange={handleChange}>
-                  <option value="">Выберите группу...</option>
+                  <option value="">{t('createJournal.groupSelect')}</option>
                   {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Предмет</label>
+                <label className="form-label">{t('createJournal.subject')}</label>
                 <select name="subject_id" className="form-select" value={form.subject_id} onChange={handleChange}>
-                  <option value="">Без предмета</option>
+                  <option value="">{t('createJournal.subjectSelect')}</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
@@ -123,20 +125,20 @@ export default function CreateJournalPage() {
         <div className="card" style={{ marginBottom:24 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
             <h3 style={{ fontFamily:'var(--font-head)', fontSize:'1rem', color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.06em' }}>
-              Даты уроков
+              {t('createJournal.lessonDates')}
             </h3>
             <div style={{ display:'flex', gap:8 }}>
               <button type="button" className="btn btn-ghost btn-sm" onClick={fillDates}>
-                📅 Авто (будни)
+                {t('createJournal.autoWeekdays')}
               </button>
               <button type="button" className="btn btn-ghost btn-sm" onClick={addDate}>
-                + Добавить дату
+                {t('createJournal.addDate')}
               </button>
             </div>
           </div>
 
           {dates.length === 0 && (
-            <div className="alert alert-info">Добавьте хотя бы одну дату урока</div>
+            <div className="alert alert-info">{t('createJournal.dateAlert')}</div>
           )}
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:10 }}>
@@ -148,24 +150,24 @@ export default function CreateJournalPage() {
                   style={{ flex:1 }}
                 />
                 {dates.length > 1 && (
-                  <button type="button" className="btn btn-danger btn-xs" onClick={() => removeDate(i)} title="Удалить">✕</button>
+                  <button type="button" className="btn btn-danger btn-xs" onClick={() => removeDate(i)} title={t('createJournal.deleteTitle')}>✕</button>
                 )}
               </div>
             ))}
           </div>
 
           <p className="form-hint" style={{ marginTop:12 }}>
-            Добавлено дат: <strong>{dates.filter(d=>d).length}</strong>
-            &nbsp;·&nbsp; Каждая дата — это колонка в журнале
+            {t('createJournal.datesAdded')} <strong>{dates.filter(d=>d).length}</strong>
+            &nbsp;·&nbsp; {t('createJournal.dateHint')}
           </p>
         </div>
 
         <div style={{ display:'flex', gap:12, justifyContent:'flex-end' }}>
           <button type="button" className="btn btn-ghost" onClick={() => navigate('/')}>
-            Отмена
+            {t('createJournal.cancel')}
           </button>
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Создание...' : '✓ Создать журнал'}
+            {loading ? t('createJournal.createBtnLoading') : t('createJournal.createBtn')}
           </button>
         </div>
       </form>

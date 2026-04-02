@@ -1,5 +1,5 @@
 const express = require('express');
-const { getJournals, getJournalById, createJournal, deleteJournal, addColumn } = require('../controllers/journalController');
+const { getJournals, getJournalById, getGroupStats, createJournal, deleteJournal, addColumn } = require('../controllers/journalController');
 const { upsertGrade } = require('../controllers/gradeController');
 const { authenticate, adminOnly } = require('../middleware/auth');
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Grades route MUST be before /:id to avoid Express matching "grades" as an id param
 router.put('/grades/upsert', authenticate, adminOnly, upsertGrade);
+router.get('/stats/performance', authenticate, getGroupStats);
 
 router.get('/', authenticate, getJournals);
 router.get('/:id', authenticate, getJournalById);

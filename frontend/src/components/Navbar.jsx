@@ -1,16 +1,19 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const NAV_LINKS = [
-  { to: '/',            icon: '🏠', label: 'Главная',        adminOnly: false },
-  { to: '/profile',     icon: '👤', label: 'Профиль',        adminOnly: false },
-  { to: '/journal/new', icon: '📝', label: 'Создать журнал', adminOnly: true  },
-  { to: '/admin',       icon: '⚙️', label: 'Управление',     adminOnly: true  },
+  { to: '/',            icon: '', labelKey: 'home',        adminOnly: false },
+  { to: '/profile',     icon: '', labelKey: 'profile',        adminOnly: false },
+  { to: '/journal/new', icon: '', labelKey: 'createJournal', adminOnly: true  },
+  { to: '/admin',       icon: '', labelKey: 'admin',     adminOnly: true  },
 ];
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -23,7 +26,12 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <NavLink to="/" className="navbar__brand" style={{ textDecoration: 'none' }}>
-        Э<span style={{ color: 'var(--accent)' }}>·</span>Журнал
+        {t('navbar.brand').split('·').map((part, i, arr) => (
+          <span key={i}>
+            {part}
+            {i === 0 && <span style={{ color: 'var(--accent)' }}>·</span>}
+          </span>
+        ))}
       </NavLink>
 
       <div className="navbar__links">
@@ -35,26 +43,27 @@ export default function Navbar() {
             className={({ isActive }) => 'navbar__link' + (isActive ? ' active' : '')}
           >
             <span className="navbar__icon">{l.icon}</span>
-            <span className="link-label">{l.label}</span>
+            <span className="link-label">{t(`navbar.${l.labelKey}`)}</span>
           </NavLink>
         ))}
       </div>
 
       <div className="navbar__right">
+        <LanguageSwitcher />
         {user && (
           <div className="navbar__user">
             <div className="navbar__avatar">{initials}</div>
             <div>
               <div className="navbar__username">
                 {user.name}
-                {user?.isAdmin && <span className="badge-admin" style={{ marginLeft: 8 }}>ADMIN</span>}
+                {user?.isAdmin && <span className="badge-admin" style={{ marginLeft: 8 }}>{t('navbar.adminBadge')}</span>}
               </div>
               <div className="navbar__group">{user?.groupName || '—'}</div>
             </div>
           </div>
         )}
         <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
-          ⏏ Выйти
+          {t('navbar.logout')}
         </button>
       </div>
     </nav>

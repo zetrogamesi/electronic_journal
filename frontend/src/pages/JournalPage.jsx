@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useToast } from '../hooks/useToast';
@@ -77,6 +78,7 @@ export default function JournalPage() {
   const { id }   = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { toasts, success, error: toastError } = useToast();
 
   const [journal,    setJournal]    = useState(null);
@@ -106,7 +108,7 @@ export default function JournalPage() {
       });
       setGrades(map);
     } catch (err) {
-      setPageError(err.response?.data?.error || 'Ошибка загрузки журнала');
+      setPageError(err.response?.data?.error || t('journal.errLoad'));
     } finally {
       setLoading(false);
     }
@@ -129,7 +131,7 @@ export default function JournalPage() {
       });
     } catch (err) {
       setGrades(g => ({ ...g, [key]: prev })); // rollback
-      toastError(err.response?.data?.error || 'Ошибка сохранения оценки');
+      toastError(err.response?.data?.error || t('journal.errSaveGrade'));
     } finally {
       setSaving(false);
     }
@@ -139,33 +141,33 @@ export default function JournalPage() {
     if (!newDate) return;
     try {
       await api.post(`/journals/${id}/columns`, { lesson_date: newDate });
-      success('Дата добавлена');
+      success(t('journal.msgDateAdded'));
       setAddColOpen(false);
       setNewDate('');
       loadJournal();
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка добавления даты');
+      toastError(err.response?.data?.error || t('journal.errAddDate'));
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Удалить этот журнал? Все оценки будут утеряны.')) return;
+    if (!confirm(t('journal.confirmDelete'))) return;
     try {
       await api.delete(`/journals/${id}`);
       navigate('/');
     } catch (err) {
-      toastError(err.response?.data?.error || 'Ошибка удаления');
+      toastError(err.response?.data?.error || t('journal.errDelete'));
     }
   };
 
   const fmtDate = d =>
-    new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    new Date(d).toLocaleDateString(t('home.localeDate') || 'ru-RU', { day: 'numeric', month: 'short' });
 
   // ── Loading / Error states ────────────────────────────────────
   if (loading) return (
     <div className="loader-wrap">
       <div className="spinner" />
-      <span style={{ color: 'var(--text3)' }}>Загрузка журнала...</span>
+      <span style={{ color: 'var(--text3)' }}>{t('home.loading')}</span>
     </div>
   );
 
@@ -173,7 +175,7 @@ export default function JournalPage() {
     <div className="page-wrap">
       <div className="alert alert-error">⚠ {pageError}</div>
       <button className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => navigate('/')}>
-        ← На главную
+        {t('journal.backToHome')}
       </button>
     </div>
   );
@@ -189,24 +191,24 @@ export default function JournalPage() {
       <div className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')}>← Назад</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')}>{t('journal.back')}</button>
             {journal.groupName   && <span className="chip chip-blue">{journal.groupName}</span>}
             {journal.subjectName && <span className="chip chip-green">{journal.subjectName}</span>}
-            {saving && <span style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>💾 Сохранение...</span>}
+            {saving && <span style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>{t('journal.saving')}</span>}
           </div>
           <h1 className="page-title">{journal.title}</h1>
           <p className="page-subtitle">
-            {students.length} студентов · {columns.length} дат уроков
+            {t('journal.studentsCount', { count: students.length })} · {t('journal.columnsCount', { count: columns.length })}
           </p>
         </div>
 
         {user?.isAdmin && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-ghost btn-sm" onClick={() => setAddColOpen(true)}>
-              + Добавить дату
+              {t('journal.addDateBtn')}
             </button>
             <button className="btn btn-danger btn-sm" onClick={handleDelete}>
-              🗑 Удалить
+              {t('journal.deleteBtn')}
             </button>
           </div>
         )}
@@ -215,26 +217,26 @@ export default function JournalPage() {
       {/* ── Admin hint ── */}
       {user?.isAdmin && (
         <div className="alert alert-info" style={{ marginBottom: 16 }}>
-          ✏️ Нажмите на ячейку для ввода оценки. Допустимые значения: <strong>1–5</strong>, <strong>н</strong> (не пришёл), <strong>зач</strong>, <strong>нез</strong>. Enter или Tab — сохранить.
+          {t('journal.adminHint')}
         </div>
       )}
 
       {/* ── Journal table ── */}
       {students.length === 0 ? (
         <div className="empty">
-          <div className="empty__icon">👥</div>
-          <div className="empty__text">В этой группе нет студентов</div>
+          <div className="empty__icon"></div>
+          <div className="empty__text">{t('journal.emptyGroup')}</div>
         </div>
       ) : (
         <div className="journal-table-wrap">
           <table className="journal-table">
             <thead>
               <tr>
-                <th className="col-name">№ · Студент</th>
+                <th className="col-name">{t('journal.colNumName')}</th>
                 {columns.map(col => (
                   <th key={col._id}>{fmtDate(col.lessonDate)}</th>
                 ))}
-                <th style={{ minWidth: 56, background: 'var(--bg3)' }}>Σ</th>
+                <th style={{ minWidth: 56, background: 'var(--bg3)' }}>{t('journal.colAvg')}</th>
               </tr>
             </thead>
             <tbody>
@@ -286,12 +288,12 @@ export default function JournalPage() {
         <div className="modal-overlay" onClick={() => setAddColOpen(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal__header">
-              <span className="modal__title">Добавить дату урока</span>
+              <span className="modal__title">{t('journal.modalAddDate')}</span>
               <button className="modal__close" onClick={() => setAddColOpen(false)}>×</button>
             </div>
             <div className="modal-form">
               <div className="form-group">
-                <label className="form-label">Дата урока</label>
+                <label className="form-label">{t('journal.modalDateLabel')}</label>
                 <input
                   type="date"
                   className="form-input"
@@ -301,9 +303,9 @@ export default function JournalPage() {
                 />
               </div>
               <div className="modal-actions">
-                <button className="btn btn-ghost" onClick={() => setAddColOpen(false)}>Отмена</button>
+                <button className="btn btn-ghost" onClick={() => setAddColOpen(false)}>{t('journal.cancel')}</button>
                 <button className="btn btn-primary" onClick={handleAddColumn} disabled={!newDate}>
-                  Добавить
+                  {t('journal.add')}
                 </button>
               </div>
             </div>
