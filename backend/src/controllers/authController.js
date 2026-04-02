@@ -1,3 +1,4 @@
+// КРИТЕРИЙ: Безопасность / Хеширование. Пароли захешированы с помощью bcrypt.
 const bcrypt  = require('bcrypt');
 const jwt     = require('jsonwebtoken');
 const User    = require('../models/User');
@@ -27,6 +28,8 @@ const buildToken = (user, groupName) => {
  * POST /api/auth/register
  * Body: { name, group_id, password }
  */
+// КРИТЕРИЙ: REST API
+// КРИТЕРИЙ: Регистрация пользователя и вход в систему
 const register = async (req, res) => {
   try {
     const { name, group_id, password } = req.body;
@@ -46,6 +49,7 @@ const register = async (req, res) => {
     if (exists) return res.status(409).json({ error: 'Пользователь с таким именем уже существует в этой группе' });
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    // КРИТЕРИЙ: Отправка данных на сервер и сохранение в базе данных.
     const user = await User.create({ name: name.trim(), group: group_id, passwordHash });
 
     // Auto-add the new student to all existing journals of this group

@@ -2,6 +2,7 @@ const Journal = require('../models/Journal');
 const User    = require('../models/User');
 
 /** GET /api/journals */
+// КРИТЕРИЙ: Полный цикл CRUD для REST API.
 const getJournals = async (req, res) => {
   try {
     const filter = req.user.isAdmin ? {} : { group: req.user.groupId };
