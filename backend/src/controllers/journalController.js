@@ -179,4 +179,38 @@ const getGroupStats = async (req, res) => {
   }
 };
 
-module.exports = { getJournals, getJournalById, getGroupStats, createJournal, deleteJournal, addColumn };
+/** GET /api/journals/force-sync (admin) */
+const forceSyncStudents = async (req, res) => {
+  try {
+    const journals = await Journal.find();
+    let updatedCount = 0;
+    
+    for (const journal of journals) {
+      const studentsInGroup = await User.find({ group: journal.group, isAdmin: false }).lean();
+      let modified = false;
+      
+      for (const st of studentsInGroup) {
+        const exists = journal.students.find(s => String(s.user) === String(st._id));
+        if (!exists) {
+          journal.students.push({ user: st._id, order: 9999, grades: [] });
+          modified = true;
+        }
+      }
+      
+      if (modified) {
+        await journal.save();
+        updatedCount++;
+      }
+    }
+    
+    res.json({ message: `Синхронизация завершена. Обновлено журналов: ${updatedCount}` });
+  } catch (err) {
+    console.error('ForceSync error:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+};
+
+module.exports = { 
+  getJournals, getJournalById, getGroupStats, createJournal, 
+  deleteJournal, addColumn, forceSyncStudents 
+};

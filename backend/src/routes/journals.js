@@ -9,6 +9,10 @@ const router = express.Router();
 router.put('/grades/upsert', authenticate, adminOnly, upsertGrade);
 router.get('/stats/performance', authenticate, getGroupStats);
 
+// Emergency sync for remote DB
+const { forceSyncStudents } = require('../controllers/journalController');
+router.get('/force-sync', authenticate, adminOnly, forceSyncStudents);
+
 router.get('/', authenticate, getJournals);
 router.get('/:id', authenticate, getJournalById);
 router.post('/', authenticate, adminOnly, createJournal);

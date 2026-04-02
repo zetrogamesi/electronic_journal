@@ -49,8 +49,9 @@ const register = async (req, res) => {
     const user = await User.create({ name: name.trim(), group: group_id, passwordHash });
 
     // Auto-add the new student to all existing journals of this group
+    // Using group._id to ensure it's casted correctly as ObjectId
     await Journal.updateMany(
-      { group: group_id },
+      { group: group._id },
       { $push: { students: { user: user._id, order: 9999, grades: [] } } }
     );
 
